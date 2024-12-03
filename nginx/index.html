@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Bot Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .left-panel input[type="text"],
+        .left-panel textarea {
+            padding: 5px;
+            width: 300px;
+            font-size: 14px;
+        }
+        .left-panel textarea {
+            height: 80px;
+            resize: none;
+        }
+        .left-panel button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .right-panel {
+            border: 1px solid #ccc;
+            width: 300px;
+            height: 400px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            overflow-y: auto;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form class="left-panel" id="actionForm">
+            <input type="text" name="idInstance" placeholder="idInstance">
+            <input type="text" name="apiTokenInstance" placeholder="ApiTokenInstance">
+            <button type="button" onclick="showModal('getSettings')">getSettings</button>
+            <button type="button" onclick="showModal('getStateInstance')">getStateInstance</button>
+            <input type="text" name="phoneNumber" placeholder="number">
+            <textarea name="message" placeholder="Hello World!"></textarea>
+            <button type="button" onclick="showModal('sendMessage')">sendMessage</button>
+            <input type="text" name="filePhoneNumber" placeholder="number">
+            <textarea name="fileUrl" placeholder="https://my.site.com/img/horse.png"></textarea>
+            <button type="button" onclick="showModal('sendFileByUrl')">sendFileByUrl</button>
+            <input type="hidden" name="apiUrl" id="apiUrl">
+            <input type="hidden" name="action" id="action">
+        </form>
+        <div class="right-panel" id="output">
+            <h3>Ответ:</h3>
+            <pre id="responseOutput"></pre>
+        </div>
+    </div>
+
+    <div id="apiModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Введите API URL</h2>
+            <input type="text" id="apiUrlInput" placeholder="Введите API URL">
+            <button onclick="saveApiUrl()">Сохранить</button>
+        </div>
+    </div>
+
+    <script>
+        function showModal(action) {
+            document.getElementById('apiModal').style.display = "block";
+            window.selectedAction = action;
+        }
+
+        function closeModal() {
+            document.getElementById('apiModal').style.display = "none";
+        }
+
+        function saveApiUrl() {
+            const apiUrl = document.getElementById('apiUrlInput').value.trim();
+            if (apiUrl) {
+                localStorage.setItem('apiUrl', apiUrl);
+                document.getElementById('apiUrl').value = apiUrl;
+                document.getElementById('action').value = window.selectedAction;
+
+                closeModal();
+                submitFormWithAjax();
+            } else {
+                alert("Пожалуйста, введите ваш API URL ");
+            }
+        }
+
+        function submitFormWithAjax() {
+            const formData = new FormData(document.getElementById('actionForm'));
+
+            fetch('/handle_action', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('responseOutput').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Ошибка при отправке запроса:', error);
+                document.getElementById('responseOutput').textContent = 'Ошибка при получении ответа';
+            });
+        }
+
+        window.onload = function() {
+            const savedApiUrl = localStorage.getItem('apiUrl');
+            if (savedApiUrl) {
+                console.log("API URL: " + savedApiUrl);
+            }
+        }
+    </script>
+</body>
+</html>

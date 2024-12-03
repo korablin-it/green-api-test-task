@@ -1,0 +1,25 @@
+- hosts: gcp
+  tasks:
+    - name: make sure target directory exists
+      file:
+        path: /opt/app
+        state: directory
+        owner: ansible
+        group: ansible
+        mode: '0755'
+      become: true
+
+    - name: Copy  src
+      copy:
+        src: ../
+        dest: /opt/app/
+        owner: ansible
+        group: ansible
+        mode: '0644'
+
+    - name: Compose up 
+      shell: |
+        cd /opt/app
+        docker-compose up -d
+      args:
+        chdir: /opt/app

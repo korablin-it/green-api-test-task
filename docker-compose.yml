@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  api-container:
+    build:
+      context: ./api
+    networks:
+      - greenapi_network
+    expose:
+      - "8000"
+    restart: always
+
+  greenapinginx:
+    build:
+      context: ./nginx
+    ports:
+      - "8880:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf  
+      - ./nginx/index.html:/usr/share/nginx/html/index.html 
+    networks:
+      - greenapi_network
+    depends_on:
+      - api-container
+    restart: always
+
+networks:
+  greenapi_network:
+    driver: bridge
