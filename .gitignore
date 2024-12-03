@@ -1,0 +1,7 @@
+env/
+./ansible/inventory.ini
+./terraform/id.rsa.pub
+./terraform/terraform.tfstate
+./terraform/terraform.tfstate.backup
+./terraform/.terraform.lock.hcl
+./terraform/.terraform/
